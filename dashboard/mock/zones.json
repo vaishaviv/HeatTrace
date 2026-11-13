@@ -1,0 +1,6 @@
+[
+  { "zone": "Z1", "avg_wbgt": 31.8, "max_wbgt": 34.2, "worker_count": 2, "band": "high" },
+  { "zone": "Z2", "avg_wbgt": 32.4, "max_wbgt": 32.6, "worker_count": 2, "band": "high" },
+  { "zone": "Z3", "avg_wbgt": 29.3, "max_wbgt": 31.6, "worker_count": 2, "band": "caution" },
+  { "zone": "Z4", "avg_wbgt": 27.6, "max_wbgt": 28.0, "worker_count": 2, "band": "safe" }
+]
