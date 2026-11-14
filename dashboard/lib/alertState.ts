@@ -45,3 +45,8 @@ export const ALERT_STATE_META: Record<
     pill: "bg-green-100 text-green-800",
   },
 };
+
+// Not cleared yet: raised, acknowledged or escalated.
+export function isActive(a: Alert): boolean {
+  return !isSet(a.cleared_ts);
+}
