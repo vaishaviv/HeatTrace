@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useWorkers, useZones, useAlerts } from "@/lib/hooks";
 import { useNow } from "@/lib/useNow";
 import Header from "@/app/components/Header";
+import NeedsAction from "@/app/components/NeedsAction";
 import WorkerTable from "@/app/components/WorkerTable";
 import ZoneGrid from "@/app/components/ZoneGrid";
 import AlertLog from "@/app/components/AlertLog";
@@ -28,6 +29,13 @@ export default function Home() {
       <Header activeAlerts={activeAlerts} updatedAt={updatedAt} now={now} />
 
       <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-4">
+        {workers.data && (
+          <section className="space-y-3">
+            <h2 className="text-lg font-extrabold">Needs action</h2>
+            <NeedsAction workers={workers.data} />
+          </section>
+        )}
+
         <section className="space-y-3">
           <h2 className="text-lg font-extrabold">Zones</h2>
           {zones.error && !zones.data && (
