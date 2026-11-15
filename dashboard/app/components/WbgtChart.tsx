@@ -67,7 +67,7 @@ export default function WbgtChart({ points }: Props) {
           <Tooltip
             labelFormatter={(ts) => formatSGT(Number(ts))}
             formatter={(v) => [`${Number(v).toFixed(1)} °C`, "WBGT"]}
-            contentStyle={{ border: "2px solid #000", borderRadius: 6 }}
+            contentStyle={{ border: `2px solid ${INK}`, borderRadius: 6 }}
           />
           <Line
             type="monotone"

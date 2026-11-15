@@ -1,6 +1,7 @@
 import { connection, NextRequest, NextResponse } from "next/server";
 import type { Zone } from "@/lib/types";
 import { mockMom } from "@/lib/mockMom";
+import { isCalendarDate } from "@/lib/params";
 import { sgtToday } from "@/lib/time";
 import { mockMode, proxy } from "@/lib/upstream";
 import zonesData from "@/mock/zones.json";
@@ -10,9 +11,9 @@ import zonesData from "@/mock/zones.json";
 export async function GET(req: NextRequest) {
   await connection();
   const date = req.nextUrl.searchParams.get("date") ?? sgtToday();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+  if (!isCalendarDate(date)) {
     return NextResponse.json(
-      { error: `Date must look like 2026-11-15, got "${date}".` },
+      { error: `date must be a real day written like 2026-11-15, got "${date}".` },
       { status: 400 }
     );
   }

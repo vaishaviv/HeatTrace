@@ -27,11 +27,6 @@ const live = {
   keepPreviousData: true, // keep showing old data while a refresh is in flight
 };
 
-// Loaded once when a view opens; no polling.
-const onOpen = {
-  revalidateOnFocus: false,
-  keepPreviousData: true,
-};
 
 // onSuccess lets the page record when live data last arrived.
 export function useWorkers(onSuccess?: () => void) {
@@ -46,11 +41,13 @@ export function useAlerts(since = 0) {
   return useSWR<Alert[]>(`/api/alerts?since=${since}`, fetcher, live);
 }
 
+// Loads when the drill-down opens, then keeps the chart moving while it stays
+// open. A minute is enough for an 8 h line.
 export function useHistory(workerId: string, hours = 8) {
   return useSWR<HistoryPoint[]>(
     `/api/workers/${encodeURIComponent(workerId)}/history?hours=${hours}`,
     fetcher,
-    onOpen
+    { refreshInterval: 60_000, keepPreviousData: true }
   );
 }
 
@@ -64,8 +61,9 @@ export function useWind() {
 }
 
 // The MOM log grows by one row per zone each hour; a minute is fresh enough.
-export function useMomLog(date: string) {
-  return useSWR<MomRow[]>(`/api/mom-log?date=${date}`, fetcher, {
+// A null date (clock not read yet) skips the request.
+export function useMomLog(date: string | null) {
+  return useSWR<MomRow[]>(date ? `/api/mom-log?date=${date}` : null, fetcher, {
     refreshInterval: 60_000,
     keepPreviousData: true,
   });

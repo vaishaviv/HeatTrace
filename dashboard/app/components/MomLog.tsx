@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import type { MomRow } from "@/lib/types";
 import { useMomLog } from "@/lib/hooks";
-import { formatSGT, formatSGTStamp, sgtToday } from "@/lib/time";
+import { formatSGT, formatSGTStamp, sgtDate } from "@/lib/time";
+import { useNow } from "@/lib/useNow";
 import { downloadCSV, toCSV, type Column } from "@/lib/csv";
 import CsvButton from "@/app/components/CsvButton";
 
@@ -11,9 +12,14 @@ import CsvButton from "@/app/components/CsvButton";
 // reading and whether a rest break was triggered. Replaces the manual meter
 // reading. Rest decisions come from the cloud; the board only displays them.
 export default function MomLog() {
-  // Mounted only when its tab opens, so reading the clock here is safe.
-  const [today] = useState(sgtToday);
-  const [date, setDate] = useState(today);
+  // The clock is read in an effect (useNow), never during render, so this is
+  // safe even if the MOM tab becomes the default. Until then, date is null and
+  // no request is made. Once a date is picked it sticks; otherwise it follows
+  // today, rolling over at midnight SGT.
+  const now = useNow(60_000);
+  const today = now === null ? null : sgtDate(now);
+  const [picked, setPicked] = useState<string | null>(null);
+  const date = picked ?? today;
   const log = useMomLog(date);
 
   const { zones, hours, cell, peak, restCount } = useMemo(() => {
@@ -30,6 +36,7 @@ export default function MomLog() {
   }, [log.data]);
 
   function exportCSV() {
+    if (!date) return;
     const columns: Column<MomRow>[] = [
       { header: "date", value: () => date },
       { header: "hour_sgt", value: (r) => formatSGTStamp(r.hour_ts) },
@@ -48,9 +55,10 @@ export default function MomLog() {
           Date
           <input
             type="date"
-            value={date}
-            max={today}
-            onChange={(e) => e.target.value && setDate(e.target.value)}
+            value={date ?? ""}
+            max={today ?? undefined}
+            disabled={date === null}
+            onChange={(e) => e.target.value && setPicked(e.target.value)}
             className="mt-1 rounded border-2 border-ink bg-white px-2 py-1 text-base"
           />
         </label>
@@ -73,7 +81,11 @@ export default function MomLog() {
       )}
       {!log.data && !log.error && <p className="text-concrete">Loading MOM log…</p>}
       {log.data && log.data.length === 0 && (
-        <p className="text-concrete">No readings were logged on {date}. Pick another date.</p>
+        <p className="text-concrete">
+          {date === today
+            ? "No hourly readings logged yet today. Rows appear as each hour closes."
+            : `No readings were logged on ${date}. Pick another date.`}
+        </p>
       )}
 
       {hours.length > 0 && (

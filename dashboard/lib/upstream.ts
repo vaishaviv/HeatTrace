@@ -12,8 +12,10 @@ export function mockMode(): boolean {
 }
 
 // Forwards a request to HT_API_URL + path with the x-api-key header.
-// Upstream 4xx (for example an unknown worker) passes through; anything else
-// that goes wrong becomes a 502 with a JSON { error } body.
+// Only real JSON is passed through: a 2xx JSON body as is, and a 4xx JSON body
+// (for example an unknown worker) with its status. A 4xx that is not JSON
+// (API Gateway's HTML or text error pages) becomes a JSON { error } with the
+// same status. Everything else becomes a 502 with a JSON { error } body.
 export async function proxy(path: string, init: RequestInit = {}): Promise<NextResponse> {
   const base = process.env.HT_API_URL;
   const key = process.env.HT_API_KEY;
@@ -31,15 +33,28 @@ export async function proxy(path: string, init: RequestInit = {}): Promise<NextR
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    const body = await res.text();
-    if (res.ok || (res.status >= 400 && res.status < 500)) {
-      return new NextResponse(body, {
+    const type = res.headers.get("content-type") ?? "";
+    const isJson = /^application\/(.+\+)?json\b/i.test(type);
+    const isClientError = res.status >= 400 && res.status < 500;
+
+    if (isJson && (res.ok || isClientError)) {
+      return new NextResponse(await res.text(), {
         status: res.status,
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": type },
       });
     }
+    if (isClientError) {
+      return NextResponse.json(
+        { error: `Read API returned ${res.status} for ${path}.` },
+        { status: res.status }
+      );
+    }
     return NextResponse.json(
-      { error: `Read API returned ${res.status} for ${path}.` },
+      {
+        error: res.ok
+          ? `Read API sent ${type || "an unlabelled body"} instead of JSON for ${path}.`
+          : `Read API returned ${res.status} for ${path}.`,
+      },
       { status: 502 }
     );
   } catch (err) {

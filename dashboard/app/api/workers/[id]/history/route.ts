@@ -2,6 +2,7 @@ import { connection, NextRequest, NextResponse } from "next/server";
 import type { Worker } from "@/lib/types";
 import { rebase } from "@/lib/mock";
 import { mockHistory } from "@/lib/mockHistory";
+import { intParam } from "@/lib/params";
 import { mockMode, proxy } from "@/lib/upstream";
 import workersData from "@/mock/workers.json";
 
@@ -12,8 +13,17 @@ export async function GET(
 ) {
   await connection();
   const { id } = await ctx.params;
-  const raw = Number(req.nextUrl.searchParams.get("hours"));
-  const hours = Math.min(24, Math.max(1, Number.isFinite(raw) && raw > 0 ? raw : 8));
+  const hours = intParam(req.nextUrl.searchParams.get("hours"), {
+    fallback: 8,
+    min: 1,
+    max: 24,
+  });
+  if (hours === null) {
+    return NextResponse.json(
+      { error: "hours must be a whole number from 1 to 24." },
+      { status: 400 }
+    );
+  }
 
   if (!mockMode()) {
     return proxy(`/workers/${encodeURIComponent(id)}/history?hours=${hours}`);

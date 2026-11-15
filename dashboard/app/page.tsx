@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useWorkers, useZones, useAlerts } from "@/lib/hooks";
 import { useNow } from "@/lib/useNow";
 import Header from "@/app/components/Header";
@@ -19,8 +18,6 @@ export default function Home() {
   const zones = useZones();
   const alerts = useAlerts();
   const now = useNow();
-  const router = useRouter();
-  const openWorker = (id: string) => router.push(`/workers/${encodeURIComponent(id)}`);
 
   // Active = not cleared yet (raised, acknowledged or escalated).
   const activeAlerts = alerts.data
@@ -62,7 +59,11 @@ export default function Home() {
             <p className="text-concrete">Loading workers…</p>
           )}
           {workers.data && (
-            <WorkerTable workers={workers.data} now={now} onSelect={openWorker} />
+            <WorkerTable
+              workers={workers.data}
+              now={now}
+              hrefFor={(id) => `/workers/${encodeURIComponent(id)}`}
+            />
           )}
         </section>
 

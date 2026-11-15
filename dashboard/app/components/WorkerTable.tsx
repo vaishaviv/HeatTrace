@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Worker } from "@/lib/types";
 import { STATUS_META } from "@/lib/status";
 import { timeAgo } from "@/lib/time";
@@ -11,10 +13,11 @@ type SortKey = "status" | "wbgt";
 interface Props {
   workers: Worker[];
   now: number | null;
-  onSelect?: (workerId: string) => void; // opens the drill-down
+  hrefFor?: (workerId: string) => string; // drill-down link for each worker
 }
 
-export default function WorkerTable({ workers, now, onSelect }: Props) {
+export default function WorkerTable({ workers, now, hrefFor }: Props) {
+  const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("status");
   const [asc, setAsc] = useState(true); // status asc = most urgent first
 
@@ -56,12 +59,12 @@ export default function WorkerTable({ workers, now, onSelect }: Props) {
             <th className="px-3 py-2 font-semibold">Worker</th>
             <th className="px-3 py-2 font-semibold">Zone</th>
             <th className="px-3 py-2 font-semibold" aria-sort={ariaSort("status")}>
-              <button onClick={() => toggle("status")} className="font-semibold">
+              <button type="button" onClick={() => toggle("status")} className="font-semibold">
                 Status{arrow("status")}
               </button>
             </th>
             <th className="px-3 py-2 font-semibold" aria-sort={ariaSort("wbgt")}>
-              <button onClick={() => toggle("wbgt")} className="font-semibold">
+              <button type="button" onClick={() => toggle("wbgt")} className="font-semibold">
                 WBGT{arrow("wbgt")}
               </button>
             </th>
@@ -73,21 +76,32 @@ export default function WorkerTable({ workers, now, onSelect }: Props) {
         <tbody>
           {sorted.map((w) => {
             const meta = STATUS_META[w.status];
+            const href = hrefFor?.(w.worker_id);
             return (
               <tr
                 key={w.worker_id}
-                tabIndex={onSelect ? 0 : undefined}
-                onClick={() => onSelect?.(w.worker_id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") onSelect?.(w.worker_id);
+                // The name link is the keyboard and screen-reader way in; a
+                // click anywhere else on the row is a convenience for touch
+                // and mouse.
+                onClick={(e) => {
+                  if (!href || (e.target as HTMLElement).closest("a")) return;
+                  router.push(href);
                 }}
-                aria-label={onSelect ? `Open ${w.name}` : undefined}
                 className={`border-b border-rule ${meta.row} ${
-                  onSelect ? "cursor-pointer hover:bg-page" : ""
+                  href ? "cursor-pointer hover:bg-page" : ""
                 }`}
               >
                 <td className="px-3 py-2">
-                  <div className="font-semibold">{w.name}</div>
+                  {href ? (
+                    <Link
+                      href={href}
+                      className="font-semibold underline decoration-rule underline-offset-4 hover:decoration-ink"
+                    >
+                      {w.name}
+                    </Link>
+                  ) : (
+                    <div className="font-semibold">{w.name}</div>
+                  )}
                   <div className="text-xs text-concrete">{w.worker_id}</div>
                 </td>
                 <td className="px-3 py-2">{w.zone}</td>

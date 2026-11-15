@@ -37,9 +37,15 @@ export function sgtHourTs(date: string, hour: number): number {
   return Date.UTC(y, m - 1, d, hour - SGT_OFFSET_H) / 1000;
 }
 
-// Today's date in Singapore as YYYY-MM-DD.
+// The Singapore calendar date (YYYY-MM-DD) of a Unix-seconds timestamp.
+export function sgtDate(ts: number): string {
+  return new Date(ts * 1000 + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 10);
+}
+
+// Today's date in Singapore. Reads the clock, so call it from route handlers
+// and event handlers, not while a component renders (use useNow + sgtDate).
 export function sgtToday(): string {
-  return new Date(Date.now() + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 10);
+  return sgtDate(Math.floor(Date.now() / 1000));
 }
 
 // e.g. "2026-11-15 14:32" in Singapore time, for CSV exports

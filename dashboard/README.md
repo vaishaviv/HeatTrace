@@ -35,8 +35,14 @@ allowedDevOrigins: ["192.168.0.105"],
 | `HT_API_URL` | Base URL of the API Gateway HTTP API, no trailing slash. |
 | `HT_API_KEY` | Sent as `x-api-key`. Server-side only; never add a `NEXT_PUBLIC_` prefix. |
 
-In proxy mode, an upstream 4xx passes through, and anything else (timeout,
-5xx, unreachable) becomes a `502 { "error": "..." }` that the UI shows.
+In proxy mode, an upstream JSON 2xx or 4xx passes through. A non-JSON 4xx
+(API Gateway's HTML pages) becomes a JSON error with the same status, and
+anything else (timeout, 5xx, a non-JSON 200, unreachable) becomes a
+`502 { "error": "..." }` that the UI shows.
+
+Query parameters are checked before anything goes upstream: `since` is a
+whole number of seconds (0 or more), `hours` a whole number from 1 to 24, and
+`date` a real calendar day. Anything else gets a 400.
 
 ## Routes
 
@@ -45,10 +51,10 @@ In proxy mode, an upstream 4xx passes through, and anything else (timeout,
 | `GET /api/workers` | `/workers` | 10 s | `mock/workers.json`, timestamps shifted to now |
 | `GET /api/zones` | `/zones` | 10 s | `mock/zones.json` |
 | `GET /api/alerts?since=<ts>` | `/alerts?since=` | 10 s | `mock/alerts.json` |
-| `GET /api/workers/{id}/history?hours=8` | `/workers/{id}/history?hours=` | on open | `lib/mockHistory.ts` |
+| `GET /api/workers/{id}/history?hours=8` | `/workers/{id}/history?hours=` | on open, then 60 s | `lib/mockHistory.ts` |
 | `POST /api/alerts/{id}/ack` | `/alerts/{id}/ack` | on click | in-memory ack, worker resting 15 min (`lib/mockState.ts`) |
 | `GET /api/mom-log?date=YYYY-MM-DD` | `/mom-log?date=` | 60 s | `lib/mockMom.ts` |
-| `GET /api/wind` | none: NEA via data.gov.sg | 60 s | always live |
+| `GET /api/wind` | none: NEA via data.gov.sg | 60 s | always live, cached 60 s per server |
 
 Shapes are in `lib/types.ts` and follow the data contract in the build guide.
 Timestamps are Unix seconds, UTC; the UI shows Singapore time. Worker

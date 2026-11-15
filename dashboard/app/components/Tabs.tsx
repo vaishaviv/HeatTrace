@@ -50,7 +50,9 @@ export default function Tabs({ label, tabs }: Props) {
               role="tab"
               type="button"
               aria-selected={selected}
-              aria-controls={`${base}-panel-${t.id}`}
+              // Only the open panel is rendered (so a tab's data loads when it
+              // opens), so only the selected tab may point at a panel.
+              aria-controls={selected ? `${base}-panel-${t.id}` : undefined}
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(t.id)}
               onKeyDown={(e) => onKeyDown(e, i)}

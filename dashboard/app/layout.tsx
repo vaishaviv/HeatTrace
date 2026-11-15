@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Overpass } from "next/font/google";
 import "./globals.css";
+import { INK_HEX } from "@/lib/tokens";
 
 // Overpass is an open-source take on Highway Gothic, the road-sign face.
 const overpass = Overpass({
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: INK_HEX, // matches the black header bar
   colorScheme: "light",
 };
 
