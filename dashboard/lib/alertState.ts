@@ -6,18 +6,29 @@ export type AlertState = "raised" | "acknowledged" | "escalated" | "cleared";
 const isSet = (v: number | null | undefined): v is number =>
   typeof v === "number" && v > 0;
 
+// An ack that comes in after the escalation (the supervisor pressed
+// "Mark resting" once the SMS went out) still acknowledges the alert.
+const ackedAfterEscalation = (a: Alert) =>
+  isSet(a.ack_ts) && isSet(a.escalated_ts) && a.ack_ts >= a.escalated_ts;
+
 // Lifecycle is read from the timestamps. Status itself is the cloud's job;
 // this only labels where an alert is in Raised, Acknowledged, Escalated, Cleared.
 export function alertState(a: Alert): AlertState {
   if (isSet(a.cleared_ts)) return "cleared";
-  if (isSet(a.escalated_ts)) return "escalated";
+  if (isSet(a.escalated_ts) && !ackedAfterEscalation(a)) return "escalated";
   if (isSet(a.ack_ts)) return "acknowledged";
   return "raised";
 }
 
-// Escalated and not yet cleared: this is the red row.
+// Escalated and still waiting for someone: the red row and the banner.
 export function isOpenEscalation(a: Alert): boolean {
-  return isSet(a.escalated_ts) && !isSet(a.cleared_ts);
+  return alertState(a) === "escalated";
+}
+
+// Raised or escalated alerts are the ones a supervisor can still act on.
+export function canAck(a: Alert): boolean {
+  const s = alertState(a);
+  return s === "raised" || s === "escalated";
 }
 
 export const ALERT_STATE_META: Record<
