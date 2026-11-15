@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useWorkers, useZones, useAlerts } from "@/lib/hooks";
 import { useNow } from "@/lib/useNow";
 import WorkerTable from "@/app/components/WorkerTable";
@@ -11,6 +12,8 @@ export default function Home() {
   const zones = useZones();
   const alerts = useAlerts();
   const now = useNow();
+  const router = useRouter();
+  const openWorker = (id: string) => router.push(`/workers/${encodeURIComponent(id)}`);
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-4">
@@ -37,7 +40,7 @@ export default function Home() {
         {!workers.data && !workers.error && (
           <p className="text-concrete">Loading workers…</p>
         )}
-        {workers.data && <WorkerTable workers={workers.data} now={now} />}
+        {workers.data && <WorkerTable workers={workers.data} now={now} onSelect={openWorker} />}
       </section>
 
       <section className="space-y-3">
