@@ -1,21 +1,10 @@
 import type { MomRow, Zone } from "@/lib/types";
 import { seeded } from "@/lib/seeded";
+import { sgtHourTs } from "@/lib/time";
 
 const FIRST_HOUR = 7; // site day runs 07:00 to 19:00 SGT
 const LAST_HOUR = 18; // the 18:00 to 19:00 hour is the last row
-const SGT_OFFSET_H = 8;
 const REST_AT = 32; // mock stand-in for the cloud's rest rule
-
-// Unix seconds for HH:00 on a YYYY-MM-DD day in Singapore time.
-export function sgtHourTs(date: string, hour: number): number {
-  const [y, m, d] = date.split("-").map(Number);
-  return Date.UTC(y, m - 1, d, hour - SGT_OFFSET_H) / 1000;
-}
-
-// Today's date in Singapore as YYYY-MM-DD.
-export function sgtToday(): string {
-  return new Date(Date.now() + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 10);
-}
 
 // One row per zone per hour, from 07:00 up to the current hour (today) or the
 // whole working day (past dates). Heat climbs to a peak around 14:00. The same

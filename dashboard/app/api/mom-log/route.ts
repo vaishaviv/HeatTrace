@@ -1,6 +1,7 @@
 import { connection, NextRequest, NextResponse } from "next/server";
 import type { Zone } from "@/lib/types";
-import { mockMom, sgtToday } from "@/lib/mockMom";
+import { mockMom } from "@/lib/mockMom";
+import { sgtToday } from "@/lib/time";
 import { mockMode, proxy } from "@/lib/upstream";
 import zonesData from "@/mock/zones.json";
 

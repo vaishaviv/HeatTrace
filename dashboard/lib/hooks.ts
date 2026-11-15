@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import type { Worker, Zone, Alert, HistoryPoint, Wind } from "@/lib/types";
+import type { Worker, Zone, Alert, HistoryPoint, MomRow, Wind } from "@/lib/types";
 
 const REFRESH_MS = 10_000; // poll every 10 s, per the guide
 
@@ -60,5 +60,13 @@ export function useWind() {
     refreshInterval: 60_000,
     keepPreviousData: true,
     shouldRetryOnError: false,
+  });
+}
+
+// The MOM log grows by one row per zone each hour; a minute is fresh enough.
+export function useMomLog(date: string) {
+  return useSWR<MomRow[]>(`/api/mom-log?date=${date}`, fetcher, {
+    refreshInterval: 60_000,
+    keepPreviousData: true,
   });
 }

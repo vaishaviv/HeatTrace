@@ -10,6 +10,8 @@ import NeedsAction from "@/app/components/NeedsAction";
 import WorkerTable from "@/app/components/WorkerTable";
 import ZoneGrid from "@/app/components/ZoneGrid";
 import AlertLog from "@/app/components/AlertLog";
+import MomLog from "@/app/components/MomLog";
+import Tabs from "@/app/components/Tabs";
 
 export default function Home() {
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
@@ -64,15 +66,30 @@ export default function Home() {
           )}
         </section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-extrabold">Alert log</h2>
-          {alerts.error && !alerts.data && (
-            <p className="font-semibold text-critical">
-              Alerts could not be loaded: {alerts.error.message}. Retrying every 10 s.
-            </p>
-          )}
-          {!alerts.data && !alerts.error && <p className="text-concrete">Loading alerts…</p>}
-          {alerts.data && <AlertLog alerts={alerts.data} workers={workers.data} />}
+        <section aria-label="Records">
+          <Tabs
+            label="Records"
+            tabs={[
+              {
+                id: "alerts",
+                label: "Alert log",
+                render: () => (
+                  <>
+                    {alerts.error && !alerts.data && (
+                      <p className="font-semibold text-critical">
+                        Alerts could not be loaded: {alerts.error.message}. Retrying every 10 s.
+                      </p>
+                    )}
+                    {!alerts.data && !alerts.error && (
+                      <p className="text-concrete">Loading alerts…</p>
+                    )}
+                    {alerts.data && <AlertLog alerts={alerts.data} workers={workers.data} />}
+                  </>
+                ),
+              },
+              { id: "mom", label: "MOM log", render: () => <MomLog /> },
+            ]}
+          />
         </section>
       </main>
     </>
