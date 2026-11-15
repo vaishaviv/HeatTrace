@@ -1,12 +1,14 @@
 import { connection, NextRequest, NextResponse } from "next/server";
 import type { Alert } from "@/lib/types";
 import { rebase } from "@/lib/mock";
+import { mockMode, proxy } from "@/lib/upstream";
 import alertsData from "@/mock/alerts.json";
 
 // GET /api/alerts?since=<unix seconds>
 export async function GET(req: NextRequest) {
   await connection();
-  const since = Number(req.nextUrl.searchParams.get("since") ?? 0);
+  const since = Number(req.nextUrl.searchParams.get("since") ?? 0) || 0;
+  if (!mockMode()) return proxy(`/alerts?since=${since}`);
 
   const alerts = rebase(alertsData as unknown as Alert[])
     .filter((a) => a.raised_ts >= since)
