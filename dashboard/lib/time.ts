@@ -41,3 +41,9 @@ export function sgtHourTs(date: string, hour: number): number {
 export function sgtToday(): string {
   return new Date(Date.now() + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 10);
 }
+
+// e.g. "2026-11-15 14:32" in Singapore time, for CSV exports
+export function formatSGTStamp(ts: number | null | undefined): string {
+  if (!ts || ts <= 0) return "";
+  return new Date(ts * 1000 + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 16).replace("T", " ");
+}

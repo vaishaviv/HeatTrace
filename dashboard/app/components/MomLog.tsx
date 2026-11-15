@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import type { MomRow } from "@/lib/types";
 import { useMomLog } from "@/lib/hooks";
-import { formatSGT, sgtToday } from "@/lib/time";
+import { formatSGT, formatSGTStamp, sgtToday } from "@/lib/time";
+import { downloadCSV, toCSV, type Column } from "@/lib/csv";
+import CsvButton from "@/app/components/CsvButton";
 
 // The hourly WBGT record for a MOM inspector: per hour, each zone's highest
 // reading and whether a rest break was triggered. Replaces the manual meter
@@ -27,6 +29,18 @@ export default function MomLog() {
     return { zones, hours, cell, peak, restCount };
   }, [log.data]);
 
+  function exportCSV() {
+    const columns: Column<MomRow>[] = [
+      { header: "date", value: () => date },
+      { header: "hour_sgt", value: (r) => formatSGTStamp(r.hour_ts) },
+      { header: "zone", value: (r) => r.zone },
+      { header: "max_wbgt_c", value: (r) => r.max_wbgt },
+      { header: "rest_triggered", value: (r) => r.rest_triggered },
+      { header: "hour_ts", value: (r) => r.hour_ts },
+    ];
+    downloadCSV(`heattrace-mom-${date}.csv`, toCSV(log.data ?? [], columns));
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-end gap-3">
@@ -40,6 +54,7 @@ export default function MomLog() {
             className="mt-1 rounded border-2 border-ink bg-white px-2 py-1 text-base"
           />
         </label>
+        <CsvButton onExport={exportCSV} disabled={!log.data || log.data.length === 0} />
         {peak && (
           <p className="text-sm">
             Highest: <strong className="tabular-nums">{peak.max_wbgt.toFixed(1)} °C</strong> in{" "}
