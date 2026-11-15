@@ -27,21 +27,21 @@ export const ALERT_STATE_META: Record<
   raised: {
     label: "Raised",
     icon: "▲",
-    pill: "bg-red-100 text-red-800 ring-1 ring-red-300",
+    pill: "bg-critical text-white",
   },
   acknowledged: {
     label: "Acknowledged",
     icon: "◆",
-    pill: "bg-blue-100 text-blue-800",
+    pill: "bg-rest text-white",
   },
   escalated: {
     label: "Escalated",
     icon: "▲▲",
-    pill: "bg-red-700 text-white",
+    pill: "bg-ink text-white ring-2 ring-critical",
   },
   cleared: {
     label: "Cleared",
     icon: "✓",
-    pill: "bg-green-100 text-green-800",
+    pill: "bg-white text-safe ring-1 ring-safe",
   },
 };

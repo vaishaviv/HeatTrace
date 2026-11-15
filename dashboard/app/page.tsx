@@ -13,36 +13,42 @@ export default function Home() {
   const now = useNow();
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-4">
-      <h1 className="text-xl font-bold">HeatTrace</h1>
+    <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-4">
+      <h1 className="text-2xl font-extrabold">HeatTrace</h1>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Zones</h2>
+      <section className="space-y-3">
+        <h2 className="text-lg font-extrabold">Zones</h2>
         {zones.error && !zones.data && (
-          <p className="text-red-400">Could not load zones.</p>
+          <p className="font-semibold text-critical">
+            Zones could not be loaded. Retrying every 10 s.
+          </p>
         )}
-        {!zones.data && !zones.error && <p>Loading zones...</p>}
+        {!zones.data && !zones.error && <p className="text-concrete">Loading zones…</p>}
         {zones.data && <ZoneGrid zones={zones.data} />}
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Workers</h2>
+      <section className="space-y-3">
+        <h2 className="text-lg font-extrabold">Workers</h2>
         {workers.error && !workers.data && (
-          <p className="text-red-400">Could not load workers.</p>
+          <p className="font-semibold text-critical">
+            Workers could not be loaded. Retrying every 10 s.
+          </p>
         )}
-        {!workers.data && !workers.error && <p>Loading workers...</p>}
+        {!workers.data && !workers.error && (
+          <p className="text-concrete">Loading workers…</p>
+        )}
         {workers.data && <WorkerTable workers={workers.data} now={now} />}
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Alert log</h2>
+      <section className="space-y-3">
+        <h2 className="text-lg font-extrabold">Alert log</h2>
         {alerts.error && !alerts.data && (
-          <p className="text-red-400">Could not load alerts.</p>
+          <p className="font-semibold text-critical">
+            Alerts could not be loaded. Retrying every 10 s.
+          </p>
         )}
-        {!alerts.data && !alerts.error && <p>Loading alerts...</p>}
-        {alerts.data && (
-          <AlertLog alerts={alerts.data} workers={workers.data} />
-        )}
+        {!alerts.data && !alerts.error && <p className="text-concrete">Loading alerts…</p>}
+        {alerts.data && <AlertLog alerts={alerts.data} workers={workers.data} />}
       </section>
     </main>
   );

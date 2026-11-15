@@ -8,42 +8,45 @@ interface Props {
 }
 
 export default function ZoneGrid({ zones }: Props) {
-  // Keep zones in a fixed order so each card stays in the same place
+  // Keep zones in a fixed order so each plate stays in the same place
   // between refreshes.
   const sorted = [...zones].sort((a, b) => a.zone.localeCompare(b.zone));
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {sorted.map((z) => {
         const meta = BAND_META[z.band];
         return (
-          <div
+          <li
             key={z.zone}
-            className={`rounded-lg border-2 p-3 ${meta.card}`}
+            className={`rounded-md border-2 border-ink p-3 ${meta.plate}`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-bold">{z.zone}</span>
-              <span className="rounded-full bg-white/60 px-2 py-0.5 text-xs font-semibold">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xl font-extrabold">{z.zone}</span>
+              <span className="text-sm font-semibold">
                 <span aria-hidden="true">{meta.icon} </span>
                 {meta.label}
               </span>
             </div>
-            <div className="mt-2 text-3xl font-bold tabular-nums">
-              {z.avg_wbgt.toFixed(1)}°C
+            <div className="mt-1 text-4xl leading-none font-extrabold tabular-nums">
+              {z.avg_wbgt.toFixed(1)}°
             </div>
-            <div className="text-xs">avg est. WBGT</div>
-            <div className="mt-2 flex justify-between text-sm">
+            <div className="mt-1 text-sm">Average WBGT</div>
+            <div className="mt-3 flex justify-between border-t border-current/30 pt-2 text-sm">
               <span>
-                Max <strong className="tabular-nums">{z.max_wbgt.toFixed(1)}°C</strong>
+                Max{" "}
+                <strong className="tabular-nums">
+                  {z.max_wbgt.toFixed(1)}°
+                </strong>
               </span>
               <span>
                 <strong className="tabular-nums">{z.worker_count}</strong>{" "}
                 {z.worker_count === 1 ? "worker" : "workers"}
               </span>
             </div>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }

@@ -4,13 +4,14 @@ import { useMemo, useState } from "react";
 import type { Worker } from "@/lib/types";
 import { STATUS_META } from "@/lib/status";
 import { timeAgo } from "@/lib/time";
+import Pill from "@/app/components/Pill";
 
 type SortKey = "status" | "wbgt";
 
 interface Props {
   workers: Worker[];
   now: number | null;
-  onSelect?: (workerId: string) => void; // used by the drill-down later
+  onSelect?: (workerId: string) => void; // opens the drill-down
 }
 
 export default function WorkerTable({ workers, now, onSelect }: Props) {
@@ -48,25 +49,25 @@ export default function WorkerTable({ workers, now, onSelect }: Props) {
     sortKey === key ? (asc ? "ascending" : "descending") : "none";
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white text-gray-900">
+    <div className="overflow-x-auto border-t-2 border-ink bg-white">
       <table className="min-w-full text-sm">
-        <thead className="bg-gray-50 text-left text-gray-600">
-          <tr>
-            <th className="px-3 py-2 font-medium">Worker</th>
-            <th className="px-3 py-2 font-medium">Zone</th>
-            <th className="px-3 py-2 font-medium" aria-sort={ariaSort("status")}>
-              <button onClick={() => toggle("status")} className="font-medium">
+        <thead className="text-left text-concrete">
+          <tr className="border-b border-rule">
+            <th className="px-3 py-2 font-semibold">Worker</th>
+            <th className="px-3 py-2 font-semibold">Zone</th>
+            <th className="px-3 py-2 font-semibold" aria-sort={ariaSort("status")}>
+              <button onClick={() => toggle("status")} className="font-semibold">
                 Status{arrow("status")}
               </button>
             </th>
-            <th className="px-3 py-2 font-medium" aria-sort={ariaSort("wbgt")}>
-              <button onClick={() => toggle("wbgt")} className="font-medium">
-                Est. WBGT{arrow("wbgt")}
+            <th className="px-3 py-2 font-semibold" aria-sort={ariaSort("wbgt")}>
+              <button onClick={() => toggle("wbgt")} className="font-semibold">
+                WBGT{arrow("wbgt")}
               </button>
             </th>
-            <th className="px-3 py-2 font-medium">Temp</th>
-            <th className="px-3 py-2 font-medium">RH</th>
-            <th className="px-3 py-2 font-medium">Last seen</th>
+            <th className="hidden px-3 py-2 font-semibold sm:table-cell">Air</th>
+            <th className="hidden px-3 py-2 font-semibold sm:table-cell">RH</th>
+            <th className="px-3 py-2 font-semibold">Last seen</th>
           </tr>
         </thead>
         <tbody>
@@ -80,33 +81,29 @@ export default function WorkerTable({ workers, now, onSelect }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") onSelect?.(w.worker_id);
                 }}
-                className={`border-t border-gray-100 ${meta.row} ${
-                  onSelect ? "cursor-pointer hover:bg-gray-50" : ""
+                aria-label={onSelect ? `Open ${w.name}` : undefined}
+                className={`border-b border-rule ${meta.row} ${
+                  onSelect ? "cursor-pointer hover:bg-page" : ""
                 }`}
               >
                 <td className="px-3 py-2">
-                  <div className="font-medium">{w.name}</div>
-                  <div className="text-xs text-gray-500">{w.worker_id}</div>
+                  <div className="font-semibold">{w.name}</div>
+                  <div className="text-xs text-concrete">{w.worker_id}</div>
                 </td>
                 <td className="px-3 py-2">{w.zone}</td>
                 <td className="px-3 py-2">
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${meta.pill}`}
-                  >
-                    <span aria-hidden="true">{meta.icon}</span>
-                    {meta.label}
-                  </span>
+                  <Pill icon={meta.icon} label={meta.label} className={meta.pill} />
                 </td>
-                <td className="px-3 py-2 font-semibold tabular-nums">
-                  {w.wbgt.toFixed(1)}°C
+                <td className="px-3 py-2 text-base font-extrabold tabular-nums">
+                  {w.wbgt.toFixed(1)}°
                 </td>
-                <td className="px-3 py-2 tabular-nums">{w.t_air.toFixed(1)}°C</td>
-                <td className="px-3 py-2 tabular-nums">{w.rh}%</td>
-                <td
-                  className={`px-3 py-2 ${
-                    w.status === "offline" ? "text-gray-500" : ""
-                  }`}
-                >
+                <td className="hidden px-3 py-2 tabular-nums sm:table-cell">
+                  {w.t_air.toFixed(1)}°
+                </td>
+                <td className="hidden px-3 py-2 tabular-nums sm:table-cell">
+                  {w.rh}%
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-concrete">
                   {timeAgo(w.last_seen, now)}
                 </td>
               </tr>
