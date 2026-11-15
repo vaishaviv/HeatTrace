@@ -44,6 +44,16 @@ export interface Alert {
   cleared_ts: number | null;
 }
 
+// GET /mom-log?date=YYYY-MM-DD (one row per zone per hour, SGT day)
+// Field names are the dashboard's proposal; the guide does not fix them.
+// Agree them with the cloud team before the read_api route is written.
+export interface MomRow {
+  zone: string;
+  hour_ts: number; // Unix seconds at the start of the hour
+  max_wbgt: number; // highest WBGT reading in the zone that hour
+  rest_triggered: boolean; // a rest break was triggered in the zone that hour
+}
+
 // GET /api/wind (dashboard-only, from NEA via data.gov.sg)
 export interface Wind {
   knots: number;

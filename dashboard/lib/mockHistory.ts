@@ -1,18 +1,7 @@
 import type { HistoryPoint, Worker } from "@/lib/types";
+import { seeded } from "@/lib/seeded";
 
 const STEP_S = 600; // one reading every 10 min is plenty for an 8 h chart
-
-// Small deterministic PRNG so a worker's mock history is the same on every
-// request (the chart does not jump around between opens).
-function seeded(seed: string) {
-  let h = 2166136261;
-  for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
-  return () => {
-    h = Math.imul(h ^ (h >>> 15), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return ((h ^= h >>> 16) >>> 0) / 4294967296;
-  };
-}
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
