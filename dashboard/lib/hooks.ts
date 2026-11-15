@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import type { Worker, Zone, Alert, HistoryPoint } from "@/lib/types";
+import type { Worker, Zone, Alert, HistoryPoint, Wind } from "@/lib/types";
 
 const REFRESH_MS = 10_000; // poll every 10 s, per the guide
 
@@ -33,8 +33,9 @@ const onOpen = {
   keepPreviousData: true,
 };
 
-export function useWorkers() {
-  return useSWR<Worker[]>("/api/workers", fetcher, live);
+// onSuccess lets the page record when live data last arrived.
+export function useWorkers(onSuccess?: () => void) {
+  return useSWR<Worker[]>("/api/workers", fetcher, { ...live, onSuccess });
 }
 
 export function useZones() {
@@ -51,4 +52,13 @@ export function useHistory(workerId: string, hours = 8) {
     fetcher,
     onOpen
   );
+}
+
+// NEA updates wind every few minutes; once a minute is plenty.
+export function useWind() {
+  return useSWR<Wind>("/api/wind", fetcher, {
+    refreshInterval: 60_000,
+    keepPreviousData: true,
+    shouldRetryOnError: false,
+  });
 }
