@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HeatTrace supervisor dashboard
 
-## Getting Started
+A phone-first board for site supervisors: who needs action now, how hot each
+zone is, every worker's WBGT, the alert and escalation log, and the hourly
+MOM record. Next.js 16 (App Router), React 19, Tailwind v4, SWR, recharts.
 
-First, run the development server:
+The dashboard never talks to the hats or MQTT. The browser only calls this
+app's own `/api/*` routes. Those serve mock data, or proxy to the cloud read
+API with the API key added on the server.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # mock mode by default
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm run build`, `npm run lint` and `npx tsc --noEmit` should all pass before
+a commit. Only one `next dev` can run per folder; a second one prints the PID
+of the first.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To open it on a phone over Wi-Fi, add your PC's LAN IP inside `nextConfig`
+in `next.config.ts` (never as `module.exports`, which replaces the config):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```ts
+allowedDevOrigins: ["192.168.0.105"],
+```
 
-## Learn More
+## Mock or live data
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Meaning |
+|---|---|
+| `HT_USE_MOCK` | Anything but `false` serves `mock/*.json` and generated mocks. `false` proxies to the read API. |
+| `HT_API_URL` | Base URL of the API Gateway HTTP API, no trailing slash. |
+| `HT_API_KEY` | Sent as `x-api-key`. Server-side only; never add a `NEXT_PUBLIC_` prefix. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In proxy mode, an upstream 4xx passes through, and anything else (timeout,
+5xx, unreachable) becomes a `502 { "error": "..." }` that the UI shows.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Routes
 
-## Deploy on Vercel
+| Browser calls | Read API path | Refresh | Mock source |
+|---|---|---|---|
+| `GET /api/workers` | `/workers` | 10 s | `mock/workers.json`, timestamps shifted to now |
+| `GET /api/zones` | `/zones` | 10 s | `mock/zones.json` |
+| `GET /api/alerts?since=<ts>` | `/alerts?since=` | 10 s | `mock/alerts.json` |
+| `GET /api/workers/{id}/history?hours=8` | `/workers/{id}/history?hours=` | on open | `lib/mockHistory.ts` |
+| `POST /api/alerts/{id}/ack` | `/alerts/{id}/ack` | on click | in-memory ack, worker resting 15 min (`lib/mockState.ts`) |
+| `GET /api/mom-log?date=YYYY-MM-DD` | `/mom-log?date=` | 60 s | `lib/mockMom.ts` |
+| `GET /api/wind` | none: NEA via data.gov.sg | 60 s | always live |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Shapes are in `lib/types.ts` and follow the data contract in the build guide.
+Timestamps are Unix seconds, UTC; the UI shows Singapore time. Worker
+`status` and zone `band` come from the cloud and are never computed here.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**For the cloud team:** the guide does not name the MOM log fields. The
+dashboard expects one row per zone per hour:
+`{ zone, hour_ts, max_wbgt, rest_triggered }` (see `MomRow`). The ack
+route should return 2xx on success and 409 if the alert already cleared.
+
+## Layout
+
+```
+app/
+  page.tsx                  the board: header, banner, needs action, zones, workers, tabs
+  workers/[id]/             drill-down (server shell + WorkerDetail client view)
+  api/                      route handlers (mock or proxy)
+  components/               Header, EscalationBanner, NeedsAction, ZoneGrid, WorkerTable,
+                            AlertLog, AckButton, Tabs, MomLog, WbgtChart, Pill, CsvButton
+lib/
+  types.ts                  data contract types
+  hooks.ts                  SWR hooks and the shared fetcher
+  upstream.ts               mock/proxy switch (server only)
+  status.ts, bands.ts, alertState.ts   label, icon and colour per state
+  time.ts, csv.ts, site.ts  SGT formatting, CSV export, site name and location
+  mock*.ts, seeded.ts       mock generators
+mock/                       seed JSON (8 workers, 4 zones, 5 alerts)
+```
+
+## Design
+
+Safety-sign palette (ISO 7010 / ANSI Z535): green safe, yellow caution,
+orange high, red critical and alert, blue resting. The colours are Tailwind
+theme tokens in `app/globals.css` (`bg-critical`, `text-ink` and so on). The
+board is light only, for legibility in direct sun, and set in Overpass, a
+road-sign face. Every colour comes with an icon and a text label, so colour
+is never the only signal.
