@@ -4,8 +4,10 @@
   Site-signage palette. Colours follow ISO 7010 / ANSI Z535 safety signs, so
   they mean on screen what they mean on site. Light only: the board is read
   on a phone in direct sun.
+  Plain @theme (not "inline") so the colours also exist as CSS variables:
+  body and the recharts chart read them with var(--color-*).
 */
-@theme inline {
+@theme {
   --color-page: #f6f7f5; /* concrete white */
   --color-ink: #000000; /* sign black */
   --color-concrete: #62686d; /* secondary text, offline */
@@ -16,7 +18,10 @@
   --color-high: #ff6a13; /* ANSI safety orange */
   --color-critical: #d7191c; /* ISO danger red */
   --color-rest: #005eb8; /* ISO mandatory-action blue */
+}
 
+@theme inline {
+  /* inline: next/font sets --font-overpass on <html> at runtime */
   --font-sans: var(--font-overpass);
 }
 
