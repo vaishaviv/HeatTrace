@@ -44,6 +44,13 @@ export interface Alert {
   cleared_ts: number | null;
 }
 
+// GET /api/wind (dashboard-only, from NEA via data.gov.sg)
+export interface Wind {
+  knots: number;
+  station: string; // NEA station name, e.g. "Changi"
+  ts: number; // Unix seconds of the NEA reading
+}
+
 // GET /workers/{id}/history?hours=8
 export interface HistoryPoint {
   ts: number;
