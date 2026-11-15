@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useWorkers, useZones, useAlerts } from "@/lib/hooks";
 import { useNow } from "@/lib/useNow";
 import Header from "@/app/components/Header";
+import EscalationBanner from "@/app/components/EscalationBanner";
 import NeedsAction from "@/app/components/NeedsAction";
 import WorkerTable from "@/app/components/WorkerTable";
 import ZoneGrid from "@/app/components/ZoneGrid";
@@ -27,6 +28,7 @@ export default function Home() {
   return (
     <>
       <Header activeAlerts={activeAlerts} updatedAt={updatedAt} now={now} />
+      {alerts.data && <EscalationBanner alerts={alerts.data} workers={workers.data} />}
 
       <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-4">
         {workers.data && (
