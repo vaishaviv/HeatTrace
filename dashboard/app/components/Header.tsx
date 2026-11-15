@@ -4,17 +4,15 @@ import { SITE } from "@/lib/site";
 import { useWind } from "@/lib/hooks";
 import { timeAgo } from "@/lib/time";
 
-const STALE_S = 30; // three missed polls
-
 interface Props {
   activeAlerts: number | null; // null while alerts are loading
-  updatedAt: number | null; // Unix seconds of the last successful worker poll
+  lastUpdated: number | null; // oldest last-success across the live feeds
+  stale: boolean; // the StatusBanner below explains; here it just turns yellow
   now: number | null;
 }
 
-export default function Header({ activeAlerts, updatedAt, now }: Props) {
+export default function Header({ activeAlerts, lastUpdated, stale, now }: Props) {
   const wind = useWind();
-  const stale = updatedAt !== null && now !== null && now - updatedAt > STALE_S;
 
   return (
     <header className="bg-ink text-white">
@@ -55,20 +53,12 @@ export default function Header({ activeAlerts, updatedAt, now }: Props) {
 
           <div>
             <dt className="text-white/70">Last update</dt>
-            <dd
-              className={`text-lg font-extrabold ${stale ? "text-caution" : ""}`}
-              role={stale ? "status" : undefined}
-            >
-              {updatedAt === null ? "…" : timeAgo(updatedAt, now) || "…"}
+            <dd className={`text-lg font-extrabold ${stale ? "text-caution" : ""}`}>
+              {lastUpdated === null ? "…" : timeAgo(lastUpdated, now) || "…"}
             </dd>
           </div>
         </dl>
       </div>
-      {stale && (
-        <p className="bg-caution px-4 py-1 text-center text-sm font-semibold text-ink">
-          No new readings for over {STALE_S} s. Check this phone&apos;s connection.
-        </p>
-      )}
     </header>
   );
 }

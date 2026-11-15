@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useWorkers, useZones, useAlerts } from "@/lib/hooks";
 import { useNow } from "@/lib/useNow";
+import { oldestFresh, STALE_AFTER_S, useFreshness } from "@/lib/freshness";
+import { isActive } from "@/lib/alertState";
 import Header from "@/app/components/Header";
+import StatusBanner from "@/app/components/StatusBanner";
 import EscalationBanner from "@/app/components/EscalationBanner";
 import NeedsAction from "@/app/components/NeedsAction";
 import WorkerTable from "@/app/components/WorkerTable";
@@ -13,20 +15,23 @@ import MomLog from "@/app/components/MomLog";
 import Tabs from "@/app/components/Tabs";
 
 export default function Home() {
-  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
-  const workers = useWorkers(() => setUpdatedAt(Math.floor(Date.now() / 1000)));
+  const workers = useWorkers();
   const zones = useZones();
   const alerts = useAlerts();
   const now = useNow();
+  const fresh = useFreshness();
 
-  // Active = not cleared yet (raised, acknowledged or escalated).
-  const activeAlerts = alerts.data
-    ? alerts.data.filter((a) => !(a.cleared_ts && a.cleared_ts > 0)).length
-    : null;
+  // Freshness is judged by the oldest of the three live feeds, so one stuck
+  // feed is enough to warn the supervisor.
+  const lastUpdated = oldestFresh(fresh);
+  const stale = now !== null && lastUpdated !== null && now - lastUpdated > STALE_AFTER_S;
+  const hasError = Boolean(workers.error || zones.error || alerts.error);
+  const activeAlerts = alerts.data ? alerts.data.filter(isActive).length : null;
 
   return (
     <>
-      <Header activeAlerts={activeAlerts} updatedAt={updatedAt} now={now} />
+      <Header activeAlerts={activeAlerts} lastUpdated={lastUpdated} stale={stale} now={now} />
+      <StatusBanner hasError={hasError} stale={stale} lastUpdated={lastUpdated} now={now} />
       {alerts.data && <EscalationBanner alerts={alerts.data} workers={workers.data} />}
 
       <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-4">

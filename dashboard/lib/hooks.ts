@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import type { Worker, Zone, Alert, HistoryPoint, MomRow, Wind } from "@/lib/types";
+import { markFresh, type LiveFeed } from "@/lib/freshness";
 
 const REFRESH_MS = 10_000; // poll every 10 s, per the guide
 
@@ -22,23 +23,25 @@ export async function fetcher<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-const live = {
+// The three live feeds poll every 10 s and record each good fetch in the
+// freshness store, so the header and status banner can tell when any one of
+// them has stalled.
+const live = (feed: LiveFeed) => ({
   refreshInterval: REFRESH_MS,
   keepPreviousData: true, // keep showing old data while a refresh is in flight
-};
+  onSuccess: () => markFresh(feed),
+});
 
-
-// onSuccess lets the page record when live data last arrived.
-export function useWorkers(onSuccess?: () => void) {
-  return useSWR<Worker[]>("/api/workers", fetcher, { ...live, onSuccess });
+export function useWorkers() {
+  return useSWR<Worker[]>("/api/workers", fetcher, live("workers"));
 }
 
 export function useZones() {
-  return useSWR<Zone[]>("/api/zones", fetcher, live);
+  return useSWR<Zone[]>("/api/zones", fetcher, live("zones"));
 }
 
 export function useAlerts(since = 0) {
-  return useSWR<Alert[]>(`/api/alerts?since=${since}`, fetcher, live);
+  return useSWR<Alert[]>(`/api/alerts?since=${since}`, fetcher, live("alerts"));
 }
 
 // Loads when the drill-down opens, then keeps the chart moving while it stays
