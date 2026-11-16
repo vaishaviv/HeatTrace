@@ -1,0 +1,3 @@
+boto3[crt]>=1.35   # crt: needed to use `aws login` credentials locally
+pytest>=8
+moto[dynamodb,sns]>=5

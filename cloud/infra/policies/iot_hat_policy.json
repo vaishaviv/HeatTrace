@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "iot:Connect",
+      "Resource": "arn:aws:iot:ap-southeast-2:612174359688:client/${iot:Connection.Thing.ThingName}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iot:Publish",
+      "Resource": [
+        "arn:aws:iot:ap-southeast-2:612174359688:topic/heattrace/${iot:Connection.Thing.ThingName}/data",
+        "arn:aws:iot:ap-southeast-2:612174359688:topic/heattrace/${iot:Connection.Thing.ThingName}/ack",
+        "arn:aws:iot:ap-southeast-2:612174359688:topic/heattrace/${iot:Connection.Thing.ThingName}/status"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iot:Receive",
+      "Resource": [
+        "arn:aws:iot:ap-southeast-2:612174359688:topic/heattrace/${iot:Connection.Thing.ThingName}/cmd",
+        "arn:aws:iot:ap-southeast-2:612174359688:topic/heattrace/all/wind"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iot:Subscribe",
+      "Resource": [
+        "arn:aws:iot:ap-southeast-2:612174359688:topicfilter/heattrace/${iot:Connection.Thing.ThingName}/cmd",
+        "arn:aws:iot:ap-southeast-2:612174359688:topicfilter/heattrace/all/wind"
+      ]
+    }
+  ]
+}

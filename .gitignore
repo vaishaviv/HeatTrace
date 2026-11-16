@@ -6,3 +6,10 @@ cloud/certs/
 *.pem
 *.key
 __pycache__/
+cloud/dist/
+.venv/
+.pytest_cache/
+simulator/*.log
+
+# firmware secrets (Wi-Fi password + device private key)
+firmware/**/secrets.h
