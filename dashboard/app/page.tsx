@@ -1,69 +1,84 @@
-import Image from "next/image";
+"use client";
+
+import { useWorkers, useZones, useAlerts } from "@/lib/hooks";
+import { useNow } from "@/lib/useNow";
+import { useFreshness } from "@/lib/freshness";
+import { isActive } from "@/lib/alertState";
+import Header from "@/app/components/Header";
+import StatusBanner from "@/app/components/StatusBanner";
+import WorkerTable from "@/app/components/WorkerTable";
+import ZoneGrid from "@/app/components/ZoneGrid";
+import AlertLog from "@/app/components/AlertLog";
+
+const SITE_NAME = "Demo site";
+const STALE_AFTER_SEC = 30; // three missed 10 s polls
+const FEEDS = ["workers", "zones", "alerts"] as const;
 
 export default function Home() {
+  const workers = useWorkers();
+  const zones = useZones();
+  const alerts = useAlerts();
+  const now = useNow();
+  const fresh = useFreshness();
+
+  // Oldest last-success across all three feeds, so one stuck feed shows up.
+  const times = FEEDS.map((k) => fresh[k]);
+  const lastUpdated = times.every((t) => t !== undefined)
+    ? Math.min(...(times as number[]))
+    : null;
+
+  const stale =
+    now !== null && lastUpdated !== null && now - lastUpdated > STALE_AFTER_SEC;
+  const hasError = Boolean(workers.error || zones.error || alerts.error);
+  const activeAlerts = alerts.data
+    ? alerts.data.filter(isActive).length
+    : null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="w-full space-y-6 p-4 lg:px-8">
+      <Header
+        siteName={SITE_NAME}
+        activeAlerts={activeAlerts}
+        windMps={null}
+        lastUpdated={lastUpdated}
+        now={now}
+      />
+
+      <StatusBanner
+        hasError={hasError}
+        stale={stale}
+        lastUpdated={lastUpdated}
+        now={now}
+      />
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Zones</h2>
+        {zones.error && !zones.data && (
+          <p className="text-red-400">Could not load zones.</p>
+        )}
+        {!zones.data && !zones.error && <p>Loading zones...</p>}
+        {zones.data && <ZoneGrid zones={zones.data} />}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Workers</h2>
+        {workers.error && !workers.data && (
+          <p className="text-red-400">Could not load workers.</p>
+        )}
+        {!workers.data && !workers.error && <p>Loading workers...</p>}
+        {workers.data && <WorkerTable workers={workers.data} now={now} />}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Alert log</h2>
+        {alerts.error && !alerts.data && (
+          <p className="text-red-400">Could not load alerts.</p>
+        )}
+        {!alerts.data && !alerts.error && <p>Loading alerts...</p>}
+        {alerts.data && (
+          <AlertLog alerts={alerts.data} workers={workers.data} />
+        )}
+      </section>
+    </main>
   );
 }

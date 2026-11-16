@@ -1,0 +1,52 @@
+[
+  {
+    "alert_id": "A-1007",
+    "worker_id": "W03",
+    "zone": "Z2",
+    "wbgt": 32.6,
+    "raised_ts": 1762269880,
+    "ack_ts": null,
+    "escalated_ts": null,
+    "cleared_ts": null
+  },
+  {
+    "alert_id": "A-1006",
+    "worker_id": "W04",
+    "zone": "Z2",
+    "wbgt": 32.1,
+    "raised_ts": 1762269400,
+    "ack_ts": 1762269520,
+    "escalated_ts": null,
+    "cleared_ts": null
+  },
+  {
+    "alert_id": "A-1005",
+    "worker_id": "W05",
+    "zone": "Z1",
+    "wbgt": 34.2,
+    "raised_ts": 1762269100,
+    "ack_ts": null,
+    "escalated_ts": 1762269700,
+    "cleared_ts": null
+  },
+  {
+    "alert_id": "A-1004",
+    "worker_id": "W01",
+    "zone": "Z3",
+    "wbgt": 32.3,
+    "raised_ts": 1762265000,
+    "ack_ts": 1762265090,
+    "escalated_ts": null,
+    "cleared_ts": 1762266000
+  },
+  {
+    "alert_id": "A-1003",
+    "worker_id": "W07",
+    "zone": "Z4",
+    "wbgt": 32.5,
+    "raised_ts": 1762260000,
+    "ack_ts": 1762260200,
+    "escalated_ts": null,
+    "cleared_ts": 1762261500
+  }
+]

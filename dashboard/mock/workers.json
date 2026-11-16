@@ -1,0 +1,90 @@
+[
+  {
+    "worker_id": "W01",
+    "name": "Lim Wei Ren",
+    "zone": "Z3",
+    "buddy_id": "W02",
+    "wbgt": 31.6,
+    "t_air": 32.4,
+    "rh": 71,
+    "status": "ok",
+    "last_seen": 1762269995
+  },
+  {
+    "worker_id": "W02",
+    "name": "Tan Kah Meng",
+    "zone": "Z3",
+    "buddy_id": "W01",
+    "wbgt": 27.0,
+    "t_air": 29.8,
+    "rh": 68,
+    "status": "ok",
+    "last_seen": 1762269992
+  },
+  {
+    "worker_id": "W03",
+    "name": "Muhammad Faizal",
+    "zone": "Z2",
+    "buddy_id": "W04",
+    "wbgt": 32.6,
+    "t_air": 33.5,
+    "rh": 70,
+    "status": "alert",
+    "last_seen": 1762269988
+  },
+  {
+    "worker_id": "W04",
+    "name": "Rajesh Kumar",
+    "zone": "Z2",
+    "buddy_id": "W03",
+    "wbgt": 32.1,
+    "t_air": 33.0,
+    "rh": 69,
+    "status": "resting",
+    "last_seen": 1762269985
+  },
+  {
+    "worker_id": "W05",
+    "name": "Chen Jun Hao",
+    "zone": "Z1",
+    "buddy_id": "W06",
+    "wbgt": 34.2,
+    "t_air": 35.1,
+    "rh": 65,
+    "status": "escalated",
+    "last_seen": 1762269990
+  },
+  {
+    "worker_id": "W06",
+    "name": "Nur Aisyah",
+    "zone": "Z1",
+    "buddy_id": "W05",
+    "wbgt": 29.4,
+    "t_air": 31.0,
+    "rh": 72,
+    "status": "ok",
+    "last_seen": 1762269997
+  },
+  {
+    "worker_id": "W07",
+    "name": "Ong Boon Teck",
+    "zone": "Z4",
+    "buddy_id": "W08",
+    "wbgt": 28.0,
+    "t_air": 30.2,
+    "rh": 74,
+    "status": "offline",
+    "last_seen": 1762269600
+  },
+  {
+    "worker_id": "W08",
+    "name": "Ahmad Syafiq",
+    "zone": "Z4",
+    "buddy_id": "W07",
+    "wbgt": 27.2,
+    "t_air": 29.5,
+    "rh": 73,
+    "status": "ok",
+    "last_seen": 1762269994
+  }
+]
