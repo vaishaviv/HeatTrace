@@ -1,0 +1,37 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "HeatTraceTables",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:ap-southeast-2:612174359688:table/ht_readings",
+        "arn:aws:dynamodb:ap-southeast-2:612174359688:table/ht_workers",
+        "arn:aws:dynamodb:ap-southeast-2:612174359688:table/ht_zones",
+        "arn:aws:dynamodb:ap-southeast-2:612174359688:table/ht_alerts",
+        "arn:aws:dynamodb:ap-southeast-2:612174359688:table/ht_alerts/index/*",
+        "arn:aws:dynamodb:ap-southeast-2:612174359688:table/ht_config"
+      ]
+    },
+    {
+      "Sid": "PublishToHats",
+      "Effect": "Allow",
+      "Action": "iot:Publish",
+      "Resource": "arn:aws:iot:ap-southeast-2:612174359688:topic/heattrace/*"
+    },
+    {
+      "Sid": "SupervisorSms",
+      "Effect": "Allow",
+      "Action": "sns:Publish",
+      "Resource": "arn:aws:sns:ap-southeast-2:612174359688:heattrace_site_alerts"
+    }
+  ]
+}
