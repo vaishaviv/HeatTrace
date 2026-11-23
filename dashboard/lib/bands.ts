@@ -1,29 +1,31 @@
 import type { ZoneBand } from "@/lib/types";
 
-// Colour, icon and label per band, so colour is never the only signal.
+// Zone cards are drawn as safety-sign plates: a solid band fill with an ink
+// border. Text colour is chosen per fill for contrast (black on yellow and
+// orange, white on green and red), and every band has an icon and a label.
 // Class names are written out in full so Tailwind can find them.
 export const BAND_META: Record<
   ZoneBand,
-  { label: string; icon: string; card: string }
+  { label: string; icon: string; plate: string }
 > = {
   safe: {
     label: "Safe",
     icon: "✓",
-    card: "bg-green-100 border-green-300 text-green-950",
+    plate: "bg-safe text-white",
   },
   caution: {
     label: "Caution",
     icon: "!",
-    card: "bg-yellow-100 border-yellow-400 text-yellow-950",
+    plate: "bg-caution text-ink",
   },
   high: {
     label: "High",
     icon: "!!",
-    card: "bg-orange-200 border-orange-400 text-orange-950",
+    plate: "bg-high text-ink",
   },
   critical: {
     label: "Critical",
     icon: "!!!",
-    card: "bg-red-200 border-red-500 text-red-950",
+    plate: "bg-critical text-white",
   },
 };

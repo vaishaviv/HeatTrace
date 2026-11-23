@@ -1,37 +1,73 @@
 "use client";
 
 import useSWR from "swr";
-import type { Worker, Zone, Alert } from "@/lib/types";
-import { markFresh } from "@/lib/freshness";
+import type { Worker, Zone, Alert, HistoryPoint, MomRow, Wind } from "@/lib/types";
+import { markFresh, type LiveFeed } from "@/lib/freshness";
 
 const REFRESH_MS = 10_000; // poll every 10 s, per the guide
 
-async function fetcher<T>(url: string): Promise<T> {
+// Throws with the route's own { error } message when there is one, so the UI
+// can say what went wrong.
+export async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error(`Request failed: ${res.status} ${url}`);
+    let detail = `${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) detail = body.error;
+    } catch {
+      // body was not JSON; keep the status code
+    }
+    throw new Error(detail);
   }
   return res.json() as Promise<T>;
 }
 
-const options = (key: string) => ({
+// The three live feeds poll every 10 s and record each good fetch in the
+// freshness store, so the header and status banner can tell when any one of
+// them has stalled.
+const live = (feed: LiveFeed) => ({
   refreshInterval: REFRESH_MS,
   keepPreviousData: true, // keep showing old data while a refresh is in flight
-  onSuccess: () => markFresh(key), // record the last good fetch
+  onSuccess: () => markFresh(feed),
 });
 
 export function useWorkers() {
-  return useSWR<Worker[]>("/api/workers", fetcher, options("workers"));
+  return useSWR<Worker[]>("/api/workers", fetcher, live("workers"));
 }
 
 export function useZones() {
-  return useSWR<Zone[]>("/api/zones", fetcher, options("zones"));
+  return useSWR<Zone[]>("/api/zones", fetcher, live("zones"));
 }
 
 export function useAlerts(since = 0) {
-  return useSWR<Alert[]>(
-    `/api/alerts?since=${since}`,
+  return useSWR<Alert[]>(`/api/alerts?since=${since}`, fetcher, live("alerts"));
+}
+
+// Loads when the drill-down opens, then keeps the chart moving while it stays
+// open. A minute is enough for an 8 h line.
+export function useHistory(workerId: string, hours = 8) {
+  return useSWR<HistoryPoint[]>(
+    `/api/workers/${encodeURIComponent(workerId)}/history?hours=${hours}`,
     fetcher,
-    options("alerts")
+    { refreshInterval: 60_000, keepPreviousData: true }
   );
+}
+
+// NEA updates wind every few minutes; once a minute is plenty.
+export function useWind() {
+  return useSWR<Wind>("/api/wind", fetcher, {
+    refreshInterval: 60_000,
+    keepPreviousData: true,
+    shouldRetryOnError: false,
+  });
+}
+
+// The MOM log grows by one row per zone each hour; a minute is fresh enough.
+// A null date (clock not read yet) skips the request.
+export function useMomLog(date: string | null) {
+  return useSWR<MomRow[]>(date ? `/api/mom-log?date=${date}` : null, fetcher, {
+    refreshInterval: 60_000,
+    keepPreviousData: true,
+  });
 }

@@ -28,3 +28,28 @@ export function formatSGTDateTime(ts: number): string {
     minute: "2-digit",
   });
 }
+
+const SGT_OFFSET_H = 8;
+
+// Unix seconds for HH:00 on a YYYY-MM-DD day in Singapore time.
+export function sgtHourTs(date: string, hour: number): number {
+  const [y, m, d] = date.split("-").map(Number);
+  return Date.UTC(y, m - 1, d, hour - SGT_OFFSET_H) / 1000;
+}
+
+// The Singapore calendar date (YYYY-MM-DD) of a Unix-seconds timestamp.
+export function sgtDate(ts: number): string {
+  return new Date(ts * 1000 + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 10);
+}
+
+// Today's date in Singapore. Reads the clock, so call it from route handlers
+// and event handlers, not while a component renders (use useNow + sgtDate).
+export function sgtToday(): string {
+  return sgtDate(Math.floor(Date.now() / 1000));
+}
+
+// e.g. "2026-11-15 14:32" in Singapore time, for CSV exports
+export function formatSGTStamp(ts: number | null | undefined): string {
+  if (!ts || ts <= 0) return "";
+  return new Date(ts * 1000 + SGT_OFFSET_H * 3600_000).toISOString().slice(0, 16).replace("T", " ");
+}
